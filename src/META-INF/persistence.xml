@@ -6,7 +6,7 @@
     <class>mx.com.sonykarl.TmpJcocReferencia</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@localhost:1521:XE"/>
-      <property name="javax.persistence.jdbc.user" value="VENFI_DESA"/>
+      <property name="javax.persistence.jdbc.user" value=""/>
       <property name="javax.persistence.jdbc.driver" value="oracle.jdbc.OracleDriver"/>
       <property name="javax.persistence.jdbc.password" value="sonykarl"/>
     </properties>
