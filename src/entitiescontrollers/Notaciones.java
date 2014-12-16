@@ -8,6 +8,8 @@ public class Notaciones {
     public static String Id = "\t@Id\n";
     public static String Lob = "\t@Lob\n";
     public static String Temporal = "\t@Temporal(TemporalType.TIMESTAMP)\n";
+    public static String Override = "\t@Override\n";
+    public static String ManyToOne = "\t@ManyToOne(optional = false)\n";
     
     private String tabla;
     private List<Campo> campos;
@@ -40,7 +42,7 @@ public class Notaciones {
         campoString.append(" t\"),\n");
         String strCampo = "";
         for(Campo campo:campos){
-            if (!campo.isLob()) {
+            if (!campo.isLob()&&!campo.esForanea()) {
                 strCampo += "\t@NamedQuery(name = \"";
                 strCampo += tablaCamelCase;
                 strCampo += ".findBy";
@@ -48,10 +50,10 @@ public class Notaciones {
                 strCampo += "\", query = \"SELECT t FROM ";
                 strCampo += tablaCamelCase;
                 strCampo += " t WHERE t.";
-                strCampo += campo.getNombre().toLowerCase();
+                strCampo += campo.toCamelCase();
                 strCampo += " = :";
-                strCampo += campo.getNombre().toLowerCase();
-                strCampo += "),\n";
+                strCampo += campo.toCamelCase();
+                strCampo += "\"),\n";
             }
         }
         campoString.append(strCampo.substring(0,strCampo.length()-2));
@@ -74,5 +76,8 @@ public class Notaciones {
     
     public static String getNotationColumna(String campo){
         return "\t@Column(name = \""+campo+"\")\n";
+    }
+    public static String getNotationJoinColumn(String campo){
+        return "\t@JoinColumn(name = \""+campo+"\", referencedColumnName = \""+campo+"\")\n";
     }
 }

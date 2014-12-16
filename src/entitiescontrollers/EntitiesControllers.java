@@ -1,6 +1,9 @@
 package entitiescontrollers;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -12,10 +15,12 @@ public class EntitiesControllers {
         EntityManagerFactory emf = null;
         EntityManager em = null;
         Query query;
+        Date inicio,fin;
         try {
+            inicio = new Date();
             emf = Persistence.createEntityManagerFactory("entitiesControllersPU");
             em = emf.createEntityManager();
-            
+            System.out.println("Inicio...");
             StringBuilder strConsulta = new StringBuilder();
             strConsulta.append("SELECT atc.table_name, ");
             strConsulta.append("  atc.column_name, ");
@@ -51,16 +56,23 @@ public class EntitiesControllers {
             strConsulta.append("  ) ");
             strConsulta.append("AS ");
             strConsulta.append("  tipo_constraint ");
-            strConsulta.append("FROM ALL_TAB_COLS atc ");
-            strConsulta.append("WHERE atc.owner     = 'VENFI_DESA' ");
-            strConsulta.append("AND atc.TABLE_NAME IN ('TMP_JCOC_PRUEBAS','TMP_JCOC_REFERENCIA') ");
-            strConsulta.append("ORDER BY atc.table_name,atc.column_id");
+            strConsulta.append("FROM ALL_TAB_COLS atc, ");
+            strConsulta.append("  ALL_TABLES at ");
+            strConsulta.append("WHERE atc.owner         = 'VENFI_DESA' ");
+            strConsulta.append("AND atc.TABLE_NAME NOT IN ('SL_DATOS_TEMPORALES','SL_NOMBRES_OBJETOS_MODIFICADOS','VF_REPORTES') ");
+            strConsulta.append("AND atc.owner           = at.owner ");
+            strConsulta.append("AND atc.TABLE_NAME      = at.TABLE_NAME ");
+            strConsulta.append("ORDER BY atc.table_name, ");
+            strConsulta.append("  atc.column_id ");
             
             query = em.createNativeQuery(strConsulta.toString());
             List<Entidad> listaEntidades = new ArrayList<Entidad>();
             Entidad tabla = null;
             Campo campo = null;
-            for(Object []reg:(List<Object[]>)query.getResultList()){
+            System.out.println("Consultando...");
+            List<Object[]> regs = query.getResultList();
+            System.out.println("Armando Entidades...");
+            for(Object []reg:regs){
                 if(tabla!= null && tabla.getNombre().equals((String)reg[0])){
                     campo = new Campo(reg[1],reg[2],reg[3],reg[4],reg[5],reg[6]);
                     tabla.addCampo(campo);
@@ -69,13 +81,33 @@ public class EntitiesControllers {
                         listaEntidades.add(tabla);
                     }
                     tabla = new Entidad(reg[0]);
+                    System.out.println("Entidad["+tabla.getNombre()+"]");
                     campo = new Campo(reg[1],reg[2],reg[3],reg[4],reg[5],reg[6]);
                     tabla.addCampo(campo);
                 }
             }
             listaEntidades.add(tabla);
-            System.out.println(listaEntidades.get(0).toJavaFile());
+            FileOutputStream fos;
+            File carpeta = new File(System.getProperty("user.dir")+File.separator+"entities");
+            carpeta.mkdir();
+            System.out.println("CreandoEntidades...");
+            for(Entidad entidad:listaEntidades){
+                fos = new FileOutputStream(carpeta.getPath()+File.separator+entidad.tablaCamelCase()+".java");
+                fos.write(entidad.toJavaFile().getBytes());
+                fos.close();
+                System.out.println(entidad.tablaCamelCase());
+            }
             
+            System.out.println("Proceso terminado con éxito...");
+            
+            fin = new Date();
+            
+            long diff = inicio.getTime() - fin.getTime();
+ 
+            long diffSeconds = diff / 1000 % 60;
+            long diffMinutes = diff / (60 * 1000) % 60;
+
+            System.out.println("El proceso tardó "+Math.abs(diffMinutes) + " minutos, "+Math.abs(diffSeconds) + " segundos.");
         } catch (Exception e) {
             e.printStackTrace(System.out);
             System.out.println(e.getMessage());
