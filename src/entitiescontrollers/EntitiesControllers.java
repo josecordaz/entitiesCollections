@@ -58,8 +58,8 @@ public class EntitiesControllers {
             strConsulta.append("  tipo_constraint ");
             strConsulta.append("FROM ALL_TAB_COLS atc, ");
             strConsulta.append("  ALL_TABLES at ");
-            strConsulta.append("WHERE atc.owner         = 'VENFI_DESA' ");
-            strConsulta.append("AND atc.TABLE_NAME NOT IN ('SL_DATOS_TEMPORALES','SL_NOMBRES_OBJETOS_MODIFICADOS','VF_REPORTES') ");
+            strConsulta.append("WHERE atc.owner         = '' ");
+            strConsulta.append("AND atc.TABLE_NAME NOT IN ('') ");
             strConsulta.append("AND atc.owner           = at.owner ");
             strConsulta.append("AND atc.TABLE_NAME      = at.TABLE_NAME ");
             strConsulta.append("ORDER BY atc.table_name, ");
